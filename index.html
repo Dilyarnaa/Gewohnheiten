@@ -1,241 +1,774 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mein Habit-Kompass & To-Dos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* =========================================
-           DAS DESIGN (CSS)
-           ========================================= */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background-color: #f0f0f5; 
-            padding: 20px; 
-            color: #333;
-            max-width: 600px;
+        :root {
+            --bg: #f4efe7;
+            --bg-accent: #efe1d0;
+            --panel: rgba(255, 250, 244, 0.82);
+            --panel-strong: rgba(255, 248, 240, 0.96);
+            --line: rgba(88, 60, 36, 0.12);
+            --text: #2f241c;
+            --muted: #756454;
+            --blue: #285c8f;
+            --blue-soft: #dbeaf6;
+            --green: #2b7a58;
+            --green-soft: #dff3e8;
+            --red: #9f4d3b;
+            --red-soft: #f8e2da;
+            --gold: #b37a1c;
+            --gold-soft: #f7edd3;
+            --shadow: 0 22px 48px rgba(63, 42, 24, 0.12);
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 32px 18px 48px;
+            font-family: "Inter", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.85), transparent 32%),
+                radial-gradient(circle at top right, rgba(40, 92, 143, 0.12), transparent 28%),
+                linear-gradient(160deg, #f9f4ed 0%, #f3eadf 48%, #ece2d6 100%);
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            z-index: -1;
+            border-radius: 999px;
+            filter: blur(18px);
+            opacity: 0.7;
+        }
+
+        body::before {
+            width: 260px;
+            height: 260px;
+            top: -70px;
+            right: -80px;
+            background: rgba(40, 92, 143, 0.15);
+        }
+
+        body::after {
+            width: 220px;
+            height: 220px;
+            bottom: -60px;
+            left: -60px;
+            background: rgba(179, 122, 28, 0.14);
+        }
+
+        .app-shell {
+            max-width: 980px;
             margin: 0 auto;
         }
-        
-        .nav-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        .btn-nav {
-            flex: 1; 
-            background: #e0e0e5;
-            color: #333;
-            padding: 15px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-nav.active {
-            background: #007aff;
-            color: white;
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 28px;
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 34px;
+            background:
+                linear-gradient(135deg, rgba(255, 252, 247, 0.94), rgba(244, 233, 219, 0.88)),
+                rgba(255, 255, 255, 0.65);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
         }
 
-        h2 { text-align: center; margin-top: 10px; }
-        .card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            position: relative; /* Wichtig für die Positionierung der Pfeile */
-        }
-        input[type="text"], input[type="number"], select { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 8px; 
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button { 
-            padding: 12px; 
-            border-radius: 8px; 
-            border: none; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            width: 100%;
-            margin-top: 5px;
-        }
-        .btn-add { background: #007aff; color: white; }
-        .btn-plus { background: #34c759; color: white; }
-        .btn-reset { background: #ff3b30; color: white; }
-        .btn-delete { background: transparent; color: #999; font-size: 14px; margin-top: 15px; width: auto; float: right; }
-        .clear { clear: both; }
-
-        /* NEU: Styles für die Hoch/Runter Buttons */
-        .controls-move {
+        .hero::after {
+            content: "";
             position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 5px;
+            inset: auto -90px -90px auto;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(40, 92, 143, 0.14), transparent 62%);
         }
-        .btn-move {
-            background: #f0f0f5;
-            color: #333;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 14px;
-            width: auto;
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            margin: 18px 0 10px;
+            max-width: 11ch;
+            font-family: "Fraunces", serif;
+            font-size: clamp(2.2rem, 5vw, 4.5rem);
+            line-height: 0.98;
+            letter-spacing: -0.04em;
+        }
+
+        .hero p {
+            max-width: 640px;
             margin: 0;
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .hero-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 18px;
+        }
+
+        .hero-stats,
+        .summary-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .stat-card,
+        .summary-card,
+        .composer,
+        .panel-card,
+        .habit-card {
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            background: var(--panel);
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card {
+            padding: 18px;
+            border-radius: 22px;
+        }
+
+        .stat-card span,
+        .summary-label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .stat-card strong,
+        .summary-value {
+            display: block;
+            margin-top: 8px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+            padding: 10px;
+            border-radius: 22px;
+            background: rgba(255, 251, 245, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 14px 34px rgba(63, 42, 24, 0.09);
+            backdrop-filter: blur(14px);
+        }
+
+        .btn-tab {
+            padding: 16px 18px;
+            border: none;
+            border-radius: 16px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .btn-tab.active {
+            color: #fff;
+            background: linear-gradient(135deg, #2b628f, #3e7aae);
+            box-shadow: 0 16px 28px rgba(40, 92, 143, 0.28);
+        }
+
+        .btn-tab:hover {
+            transform: translateY(-1px);
+        }
+
+        .section {
+            display: none;
+            animation: fadeUp 0.35s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .summary-grid {
+            margin-bottom: 16px;
+        }
+
+        .summary-card {
+            padding: 18px;
+            border-radius: 22px;
+        }
+
+        .summary-card.accent-blue {
+            background: linear-gradient(180deg, rgba(219, 234, 246, 0.92), rgba(255, 252, 247, 0.92));
+        }
+
+        .summary-card.accent-green {
+            background: linear-gradient(180deg, rgba(223, 243, 232, 0.96), rgba(255, 252, 247, 0.92));
+        }
+
+        .summary-card.accent-gold {
+            background: linear-gradient(180deg, rgba(247, 237, 211, 0.96), rgba(255, 252, 247, 0.92));
+        }
+
+        .composer,
+        .panel-card {
+            padding: 22px;
+            border-radius: 26px;
+        }
+
+        .card-title {
+            margin: 0 0 8px;
+            font-family: "Fraunces", serif;
+            font-size: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .card-subtitle {
+            margin: 0 0 18px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1.2fr 0.8fr;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.82);
+            padding: 14px 16px;
+            color: var(--text);
+            font: inherit;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: rgba(40, 92, 143, 0.45);
+            box-shadow: 0 0 0 4px rgba(40, 92, 143, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary,
+        .btn-soft,
+        .btn-danger,
+        .btn-ghost,
+        .btn-icon {
+            border: none;
+            cursor: pointer;
+            font: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-primary,
+        .btn-soft,
+        .btn-danger {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 16px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background: linear-gradient(135deg, #2b628f, #3e7aae);
+            box-shadow: 0 16px 28px rgba(40, 92, 143, 0.22);
+        }
+
+        .btn-soft {
+            color: #fff;
+            background: linear-gradient(135deg, #2b7a58, #45956f);
+            box-shadow: 0 16px 28px rgba(43, 122, 88, 0.2);
+        }
+
+        .btn-danger {
+            color: #fff;
+            background: linear-gradient(135deg, #9f4d3b, #bd6651);
+            box-shadow: 0 16px 28px rgba(159, 77, 59, 0.2);
+        }
+
+        .btn-primary:hover,
+        .btn-soft:hover,
+        .btn-danger:hover,
+        .btn-ghost:hover,
+        .btn-icon:hover {
+            transform: translateY(-1px);
+        }
+
+        .list-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .habit-card {
+            position: relative;
+            padding: 22px;
+            border-radius: 24px;
+        }
+
+        .habit-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 6px;
+            border-radius: 24px 0 0 24px;
+            background: var(--card-accent, var(--blue));
+        }
+
+        .habit-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .habit-title {
+            margin: 0;
+            font-size: 1.12rem;
+            font-weight: 700;
+        }
+
+        .habit-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--muted);
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .habit-description {
+            margin: 0 0 16px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .habit-actions,
+        .todo-actions,
+        .inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .inline-form input {
+            flex: 1;
+            min-width: 120px;
+            margin: 0;
+        }
+
+        .inline-form .btn-soft {
+            width: auto;
+            min-width: 78px;
+        }
+
+        .btn-ghost {
+            width: auto;
+            padding: 11px 14px;
+            border-radius: 14px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.72);
+            font-weight: 700;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .btn-delete {
+            color: var(--red);
+            background: rgba(159, 77, 59, 0.08);
+        }
+
+        .todo-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(88, 60, 36, 0.08);
+        }
+
+        .todo-row:last-child {
+            border-bottom: none;
+        }
+
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--green);
             cursor: pointer;
         }
 
-        /* To-Do Styles */
-        .todo-item { 
-            display: flex; 
-            align-items: center; 
-            padding: 10px 0; 
-            border-bottom: 1px solid #eee; 
-            gap: 8px; /* Abstand zwischen den Elementen */
+        .todo-copy {
+            display: grid;
+            gap: 3px;
         }
-        .todo-item:last-child { border-bottom: none; }
-        .todo-checkbox { 
-            width: 24px; 
-            height: 24px; 
-            cursor: pointer;
+
+        .todo-text {
+            font-size: 1rem;
+            font-weight: 600;
         }
-        .todo-text { 
-            flex-grow: 1; 
-            font-size: 16px; 
-            transition: all 0.2s;
+
+        .todo-note {
+            color: var(--muted);
+            font-size: 0.86rem;
         }
-        .todo-completed { 
-            text-decoration: line-through; 
-            color: #aaa; 
+
+        .todo-completed .todo-text,
+        .todo-completed .todo-note {
+            color: #a49384;
+            text-decoration: line-through;
         }
-        .btn-delete-small { 
-            background: transparent; 
-            color: #ff3b30; 
-            border: none; 
-            width: auto; 
-            padding: 5px; 
-            margin: 0; 
-            font-size: 14px;
+
+        .empty-state {
+            padding: 26px 18px;
+            border-radius: 20px;
+            text-align: center;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px dashed rgba(88, 60, 36, 0.12);
         }
-        .btn-move-small {
-            background: #f0f0f5;
-            border: none;
-            padding: 5px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
-            margin: 0;
-            width: auto;
+
+        .footer-note {
+            margin-top: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 20px 14px 34px;
+            }
+
+            .hero,
+            .composer,
+            .panel-card,
+            .habit-card {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                max-width: none;
+            }
+
+            .todo-row {
+                grid-template-columns: auto 1fr;
+            }
+
+            .todo-actions {
+                grid-column: 1 / -1;
+            }
         }
     </style>
 </head>
 <body>
+    <main class="app-shell">
+        <section class="hero">
+            <div class="hero-grid">
+                <div class="eyebrow">Routinen mit Stil</div>
+                <div>
+                    <h1>Dein Alltag, klarer und schöner organisiert.</h1>
+                    <p>
+                        Behalte Gewohnheiten und Aufgaben in einem ruhigen, hochwertigen Dashboard im Blick.
+                        Alles bleibt lokal auf deinem Gerät gespeichert.
+                    </p>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span>Gewohnheiten gesamt</span>
+                        <strong id="heroHabitCount">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Offene To-Dos</span>
+                        <strong id="heroTodoOpenCount">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Erledigt heute</span>
+                        <strong id="heroTodoDoneCount">0</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <div class="nav-container">
-        <button id="btnHabits" class="btn-nav active" onclick="switchTab('habits')">🧭 Gewohnheiten</button>
-        <button id="btnTodos" class="btn-nav" onclick="switchTab('todos')">📝 To-Dos</button>
-    </div>
+        <nav class="tabs">
+            <button id="btnHabits" class="btn-tab active" onclick="switchTab('habits')">Habit-Kompass</button>
+            <button id="btnTodos" class="btn-tab" onclick="switchTab('todos')">To-Do Fokus</button>
+        </nav>
 
-    <div id="sectionHabits" style="display: block;">
-        <h2>🧭 Mein Habit-Kompass</h2>
-        <div class="card">
-            <input type="text" id="habitName" placeholder="Name der Gewohnheit (z.B. Lesen)...">
-            <select id="habitType">
-                <option value="good">🟢 Gute Gewohnheit (Zähler)</option>
-                <option value="bad">🔴 Schlechte Gewohnheit (Timer)</option>
-                <option value="reading">📖 Lesen (Seiten-Tracker)</option>
-            </select>
-            <button class="btn-add" onclick="addHabit()">Gewohnheit hinzufügen</button>
-        </div>
-        <div id="habitsContainer"></div>
-    </div>
+        <section id="sectionHabits" class="section active">
+            <div class="summary-grid">
+                <div class="summary-card accent-blue">
+                    <span class="summary-label">Positive Routinen</span>
+                    <strong class="summary-value" id="goodHabitCount">0</strong>
+                </div>
+                <div class="summary-card accent-green">
+                    <span class="summary-label">Lese-Tracker</span>
+                    <strong class="summary-value" id="readingHabitPages">0</strong>
+                </div>
+                <div class="summary-card accent-gold">
+                    <span class="summary-label">Timer ohne Rückfall</span>
+                    <strong class="summary-value" id="badHabitCount">0</strong>
+                </div>
+            </div>
 
-    <div id="sectionTodos" style="display: none;">
-        <h2>📝 Meine To-Do Liste</h2>
-        <div class="card">
-            <input type="text" id="todoName" placeholder="Neue Aufgabe eintragen...">
-            <button class="btn-add" onclick="addTodo()">Aufgabe hinzufügen</button>
-        </div>
-        <div class="card" id="todosContainer" style="padding-top: 5px; padding-bottom: 5px;">
-        </div>
-    </div>
+            <div class="section-grid">
+                <div class="composer">
+                    <h2 class="card-title">Neue Gewohnheit anlegen</h2>
+                    <p class="card-subtitle">Wähle den Typ und starte direkt mit einer aufgeräumten Übersicht.</p>
+                    <div class="form-grid">
+                        <input type="text" id="habitName" placeholder="Zum Beispiel: 20 Minuten lesen">
+                        <select id="habitType">
+                            <option value="good">Gute Gewohnheit (Zähler)</option>
+                            <option value="bad">Schlechte Gewohnheit (Timer)</option>
+                            <option value="reading">Lesen (Seiten-Tracker)</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="addHabit()">Gewohnheit hinzufügen</button>
+                </div>
+
+                <div id="habitsContainer" class="list-grid"></div>
+            </div>
+        </section>
+
+        <section id="sectionTodos" class="section">
+            <div class="summary-grid">
+                <div class="summary-card accent-blue">
+                    <span class="summary-label">Einträge gesamt</span>
+                    <strong class="summary-value" id="todoTotalCount">0</strong>
+                </div>
+                <div class="summary-card accent-green">
+                    <span class="summary-label">Bereits erledigt</span>
+                    <strong class="summary-value" id="todoCompletedCount">0</strong>
+                </div>
+                <div class="summary-card accent-gold">
+                    <span class="summary-label">Noch offen</span>
+                    <strong class="summary-value" id="todoPendingCount">0</strong>
+                </div>
+            </div>
+
+            <div class="section-grid">
+                <div class="composer">
+                    <h2 class="card-title">Neue Aufgabe notieren</h2>
+                    <p class="card-subtitle">Sammle kleine nächste Schritte an einem Ort und hake sie entspannt ab.</p>
+                    <div class="form-grid">
+                        <input type="text" id="todoName" placeholder="Zum Beispiel: Kapitel 3 zusammenfassen">
+                        <div></div>
+                    </div>
+                    <button class="btn-primary" onclick="addTodo()">Aufgabe hinzufügen</button>
+                </div>
+
+                <div class="panel-card">
+                    <h2 class="card-title">Deine Liste</h2>
+                    <p class="card-subtitle">Sortiere nach Priorität, markiere Erledigtes oder räume auf.</p>
+                    <div id="todosContainer"></div>
+                </div>
+            </div>
+        </section>
+
+        <p class="footer-note">Alle Daten werden weiterhin lokal im Browser gespeichert.</p>
+    </main>
 
     <script>
-        /* =========================================
-           NAVIGATION
-           ========================================= */
-        function switchTab(tabName) {
-            const secHabits = document.getElementById('sectionHabits');
-            const secTodos = document.getElementById('sectionTodos');
-            const btnHabits = document.getElementById('btnHabits');
-            const btnTodos = document.getElementById('btnTodos');
+        let habits = JSON.parse(localStorage.getItem("myHabits")) || [];
+        let todos = JSON.parse(localStorage.getItem("myTodos")) || [];
 
-            if (tabName === 'habits') {
-                secHabits.style.display = 'block';
-                secTodos.style.display = 'none';
-                btnHabits.classList.add('active');
-                btnTodos.classList.remove('active');
-            } else if (tabName === 'todos') {
-                secHabits.style.display = 'none';
-                secTodos.style.display = 'block';
-                btnTodos.classList.add('active');
-                btnHabits.classList.remove('active');
+        function switchTab(tabName) {
+            const habitsSection = document.getElementById("sectionHabits");
+            const todosSection = document.getElementById("sectionTodos");
+            const habitsButton = document.getElementById("btnHabits");
+            const todosButton = document.getElementById("btnTodos");
+
+            if (tabName === "habits") {
+                habitsSection.classList.add("active");
+                todosSection.classList.remove("active");
+                habitsButton.classList.add("active");
+                todosButton.classList.remove("active");
+            } else {
+                todosSection.classList.add("active");
+                habitsSection.classList.remove("active");
+                todosButton.classList.add("active");
+                habitsButton.classList.remove("active");
             }
         }
 
-        /* =========================================
-           TEIL 1: GEWOHNHEITEN
-           ========================================= */
-        let habits = JSON.parse(localStorage.getItem('myHabits')) || [];
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function getHabitMeta(type) {
+            if (type === "good") {
+                return {
+                    label: "Gute Gewohnheit",
+                    accent: "var(--blue)",
+                    description: "Halte deine positive Routine sichtbar und zähle jeden erfolgreichen Durchlauf."
+                };
+            }
+
+            if (type === "reading") {
+                return {
+                    label: "Lese-Tracker",
+                    accent: "var(--green)",
+                    description: "Sammle gelesene Seiten und beobachte, wie dein Fortschritt wächst."
+                };
+            }
+
+            return {
+                label: "Rückfall-Timer",
+                accent: "var(--red)",
+                description: "Miss die Zeit seit dem letzten Rückfall und starte neu, wenn es nötig ist."
+            };
+        }
+
+        function formatDuration(startTime) {
+            const diffMinutes = Math.floor((Date.now() - startTime) / (1000 * 60));
+            const hours = Math.floor(diffMinutes / 60);
+            const days = Math.floor(hours / 24);
+            return days > 0
+                ? days + " Tage, " + (hours % 24) + " Stunden"
+                : hours + " Stunden, " + (diffMinutes % 60) + " Minuten";
+        }
+
+        function updateHeroStats() {
+            const completedTodos = todos.filter((todo) => todo.completed).length;
+            document.getElementById("heroHabitCount").textContent = habits.length;
+            document.getElementById("heroTodoOpenCount").textContent = todos.length - completedTodos;
+            document.getElementById("heroTodoDoneCount").textContent = completedTodos;
+
+            document.getElementById("goodHabitCount").textContent = habits.filter((habit) => habit.type === "good").length;
+            document.getElementById("readingHabitPages").textContent = habits
+                .filter((habit) => habit.type === "reading")
+                .reduce((sum, habit) => sum + (habit.totalPages || 0), 0);
+            document.getElementById("badHabitCount").textContent = habits.filter((habit) => habit.type === "bad").length;
+
+            document.getElementById("todoTotalCount").textContent = todos.length;
+            document.getElementById("todoCompletedCount").textContent = completedTodos;
+            document.getElementById("todoPendingCount").textContent = todos.length - completedTodos;
+        }
 
         function saveHabits() {
-            localStorage.setItem('myHabits', JSON.stringify(habits));
+            localStorage.setItem("myHabits", JSON.stringify(habits));
             renderHabits();
+            updateHeroStats();
+        }
+
+        function saveTodos() {
+            localStorage.setItem("myTodos", JSON.stringify(todos));
+            renderTodos();
+            updateHeroStats();
         }
 
         function addHabit() {
-            const name = document.getElementById('habitName').value;
-            const type = document.getElementById('habitType').value;
-            if(name.trim() === '') return;
+            const nameInput = document.getElementById("habitName");
+            const typeInput = document.getElementById("habitType");
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                return;
+            }
 
             habits.push({
                 id: Date.now(),
                 name: name,
-                type: type,
+                type: typeInput.value,
                 count: 0,
-                totalPages: 0, 
+                totalPages: 0,
                 startTime: Date.now()
             });
-            document.getElementById('habitName').value = '';
+
+            nameInput.value = "";
             saveHabits();
         }
 
-        // NEU: Funktion zum Verschieben von Gewohnheiten
         function moveHabit(id, direction) {
-            // Finde heraus, an welcher Position (Index) das Element steht
-            const index = habits.findIndex(h => h.id === id);
-            
-            // Wenn es nach OBEN soll (-1) und nicht schon ganz oben ist (index > 0)
+            const index = habits.findIndex((habit) => habit.id === id);
+
             if (direction === -1 && index > 0) {
-                // Tausche das Element mit dem Element darüber
-                let temp = habits[index - 1];
+                const temp = habits[index - 1];
                 habits[index - 1] = habits[index];
                 habits[index] = temp;
                 saveHabits();
-            } 
-            // Wenn es nach UNTEN soll (1) und nicht schon ganz unten ist
-            else if (direction === 1 && index < habits.length - 1) {
-                // Tausche das Element mit dem Element darunter
-                let temp = habits[index + 1];
+            } else if (direction === 1 && index < habits.length - 1) {
+                const temp = habits[index + 1];
                 habits[index + 1] = habits[index];
                 habits[index] = temp;
                 saveHabits();
@@ -243,124 +776,128 @@
         }
 
         function addPages(id) {
-            const inputField = document.getElementById(`input-${id}`);
-            const pagesToAdd = parseInt(inputField.value);
-            if (isNaN(pagesToAdd) || pagesToAdd <= 0) return;
+            const inputField = document.getElementById("input-" + id);
+            const pagesToAdd = parseInt(inputField.value, 10);
 
-            let habit = habits.find(h => h.id === id);
+            if (Number.isNaN(pagesToAdd) || pagesToAdd <= 0) {
+                return;
+            }
+
+            const habit = habits.find((entry) => entry.id === id);
             habit.totalPages += pagesToAdd;
-            inputField.value = ''; 
+            inputField.value = "";
             saveHabits();
         }
 
         function increaseCount(id) {
-            let habit = habits.find(h => h.id === id);
-            habit.count++;
+            const habit = habits.find((entry) => entry.id === id);
+            habit.count += 1;
             saveHabits();
         }
 
         function resetTimer(id) {
-            let habit = habits.find(h => h.id === id);
+            const habit = habits.find((entry) => entry.id === id);
             habit.startTime = Date.now();
             saveHabits();
         }
 
         function deleteHabit(id) {
-            habits = habits.filter(h => h.id !== id);
+            habits = habits.filter((habit) => habit.id !== id);
             saveHabits();
         }
 
         function renderHabits() {
-            const container = document.getElementById('habitsContainer');
-            container.innerHTML = '';
-            let now = Date.now();
+            const container = document.getElementById("habitsContainer");
 
-            habits.forEach(h => {
-                let div = document.createElement('div');
-                div.className = 'card';
-                
-                // HTML für die Pfeile
-                let moveButtonsHTML = `
-                    <div class="controls-move">
-                        <button class="btn-move" onclick="moveHabit(${h.id}, -1)">⬆️</button>
-                        <button class="btn-move" onclick="moveHabit(${h.id}, 1)">⬇️</button>
-                    </div>
-                `;
-                
-                if(h.type === 'good') {
-                    div.innerHTML = `
-                        ${moveButtonsHTML}
-                        <h3 style="margin-right: 80px;">🟢 ${h.name}</h3>
-                        <p>Aktueller Stand: <strong>${h.count}</strong> mal geschafft!</p>
-                        <button class="btn-plus" onclick="increaseCount(${h.id})">+ 1 Hinzufügen</button>
-                        <button class="btn-delete" onclick="deleteHabit(${h.id})">Löschen</button>
-                        <div class="clear"></div>
-                    `;
-                } else if(h.type === 'reading') {
-                    div.innerHTML = `
-                        ${moveButtonsHTML}
-                        <h3 style="margin-right: 80px;">📖 ${h.name}</h3>
-                        <p>Insgesamt gelesen: <strong>${h.totalPages}</strong> Seiten</p>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="number" id="input-${h.id}" placeholder="Seiten..." style="flex-grow: 1; margin: 0;">
-                            <button class="btn-plus" onclick="addPages(${h.id})" style="width: auto; margin: 0; padding: 10px 20px;">+</button>
+            if (habits.length === 0) {
+                container.innerHTML = '<div class="empty-state">Noch keine Gewohnheiten angelegt. Starte mit einer kleinen Routine.</div>';
+                return;
+            }
+
+            container.innerHTML = "";
+
+            habits.forEach((habit) => {
+                const meta = getHabitMeta(habit.type);
+                const card = document.createElement("article");
+                card.className = "habit-card";
+                card.style.setProperty("--card-accent", meta.accent);
+
+                let contentHtml = "";
+
+                if (habit.type === "good") {
+                    contentHtml = `
+                        <p class="habit-description">Aktueller Stand: <strong>${habit.count}</strong> erfolgreich abgeschlossen.</p>
+                        <div class="habit-actions">
+                            <button class="btn-soft" onclick="increaseCount(${habit.id})">+1 Fortschritt eintragen</button>
                         </div>
-                        <button class="btn-delete" onclick="deleteHabit(${h.id})">Löschen</button>
-                        <div class="clear"></div>
+                    `;
+                } else if (habit.type === "reading") {
+                    contentHtml = `
+                        <p class="habit-description">Bisher gelesen: <strong>${habit.totalPages}</strong> Seiten.</p>
+                        <div class="inline-form">
+                            <input type="number" id="input-${habit.id}" placeholder="Seitenzahl">
+                            <button class="btn-soft" onclick="addPages(${habit.id})">Speichern</button>
+                        </div>
                     `;
                 } else {
-                    let diffMinutes = Math.floor((now - h.startTime) / (1000 * 60));
-                    let hours = Math.floor(diffMinutes / 60);
-                    let days = Math.floor(hours / 24);
-                    let displayTime = `${days} Tage, ${hours % 24} Stunden`;
-
-                    div.innerHTML = `
-                        ${moveButtonsHTML}
-                        <h3 style="margin-right: 80px;">🔴 ${h.name}</h3>
-                        <p>Zeit seit dem letzten Mal: <strong>${displayTime}</strong></p>
-                        <button class="btn-reset" onclick="resetTimer(${h.id})">Rückfällig (Reset)</button>
-                        <button class="btn-delete" onclick="deleteHabit(${h.id})">Löschen</button>
-                        <div class="clear"></div>
+                    contentHtml = `
+                        <p class="habit-description">Zeit seit dem letzten Mal: <strong>${formatDuration(habit.startTime)}</strong>.</p>
+                        <div class="habit-actions">
+                            <button class="btn-danger" onclick="resetTimer(${habit.id})">Rückfall markieren</button>
+                        </div>
                     `;
                 }
-                container.appendChild(div);
+
+                card.innerHTML = `
+                    <div class="habit-head">
+                        <div>
+                            <h3 class="habit-title">${escapeHtml(habit.name)}</h3>
+                            <div class="habit-meta">${meta.label}</div>
+                        </div>
+                        <div class="habit-actions">
+                            <button class="btn-icon" onclick="moveHabit(${habit.id}, -1)" aria-label="Nach oben">↑</button>
+                            <button class="btn-icon" onclick="moveHabit(${habit.id}, 1)" aria-label="Nach unten">↓</button>
+                        </div>
+                    </div>
+                    <p class="habit-description">${meta.description}</p>
+                    ${contentHtml}
+                    <div class="habit-actions" style="margin-top: 12px;">
+                        <button class="btn-ghost btn-delete" onclick="deleteHabit(${habit.id})">Löschen</button>
+                    </div>
+                `;
+
+                container.appendChild(card);
             });
         }
 
-        /* =========================================
-           TEIL 2: TO-DO LISTE
-           ========================================= */
-        let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
-
-        function saveTodos() {
-            localStorage.setItem('myTodos', JSON.stringify(todos));
-            renderTodos();
-        }
-
         function addTodo() {
-            const text = document.getElementById('todoName').value;
-            if(text.trim() === '') return; 
+            const todoInput = document.getElementById("todoName");
+            const text = todoInput.value.trim();
+
+            if (!text) {
+                return;
+            }
 
             todos.push({
                 id: Date.now(),
                 text: text,
-                completed: false 
+                completed: false
             });
-            document.getElementById('todoName').value = ''; 
+
+            todoInput.value = "";
             saveTodos();
         }
 
-        // NEU: Funktion zum Verschieben von To-Dos
         function moveTodo(id, direction) {
-            const index = todos.findIndex(t => t.id === id);
-            
+            const index = todos.findIndex((todo) => todo.id === id);
+
             if (direction === -1 && index > 0) {
-                let temp = todos[index - 1];
+                const temp = todos[index - 1];
                 todos[index - 1] = todos[index];
                 todos[index] = temp;
                 saveTodos();
             } else if (direction === 1 && index < todos.length - 1) {
-                let temp = todos[index + 1];
+                const temp = todos[index + 1];
                 todos[index + 1] = todos[index];
                 todos[index] = temp;
                 saveTodos();
@@ -368,48 +905,49 @@
         }
 
         function toggleTodo(id) {
-            let todo = todos.find(t => t.id === id);
-            todo.completed = !todo.completed; 
+            const todo = todos.find((entry) => entry.id === id);
+            todo.completed = !todo.completed;
             saveTodos();
         }
 
         function deleteTodo(id) {
-            todos = todos.filter(t => t.id !== id);
+            todos = todos.filter((todo) => todo.id !== id);
             saveTodos();
         }
 
         function renderTodos() {
-            const container = document.getElementById('todosContainer');
-            container.innerHTML = '';
+            const container = document.getElementById("todosContainer");
 
             if (todos.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #888;">Noch keine Aufgaben vorhanden.</p>';
+                container.innerHTML = '<div class="empty-state">Noch keine Aufgaben vorhanden. Trage deine erste Priorität ein.</div>';
                 return;
             }
 
-            todos.forEach(t => {
-                let div = document.createElement('div');
-                div.className = 'todo-item';
-                
-                div.innerHTML = `
-                    <input type="checkbox" class="todo-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo(${t.id})">
-                    <span class="todo-text ${t.completed ? 'todo-completed' : ''}">${t.text}</span>
-                    <button class="btn-move-small" onclick="moveTodo(${t.id}, -1)">⬆️</button>
-                    <button class="btn-move-small" onclick="moveTodo(${t.id}, 1)">⬇️</button>
-                    <button class="btn-delete-small" onclick="deleteTodo(${t.id})">✖</button>
+            container.innerHTML = "";
+
+            todos.forEach((todo) => {
+                const row = document.createElement("div");
+                row.className = "todo-row" + (todo.completed ? " todo-completed" : "");
+                row.innerHTML = `
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? "checked" : ""} onchange="toggleTodo(${todo.id})">
+                    <div class="todo-copy">
+                        <span class="todo-text">${escapeHtml(todo.text)}</span>
+                        <span class="todo-note">${todo.completed ? "Bereits erledigt" : "Noch offen"}</span>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="btn-icon" onclick="moveTodo(${todo.id}, -1)" aria-label="Nach oben">↑</button>
+                        <button class="btn-icon" onclick="moveTodo(${todo.id}, 1)" aria-label="Nach unten">↓</button>
+                        <button class="btn-icon btn-delete" onclick="deleteTodo(${todo.id})" aria-label="Löschen">×</button>
+                    </div>
                 `;
-                container.appendChild(div);
+                container.appendChild(row);
             });
         }
 
-        // =========================================
-        // START DER APP
-        // =========================================
         renderHabits();
-        renderTodos(); 
-        
+        renderTodos();
+        updateHeroStats();
         setInterval(renderHabits, 60000);
-
     </script>
 </body>
 </html>
