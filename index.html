@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Habit-Kompass & To-Dos</title>
+    <style>
+        /* =========================================
+           DAS DESIGN (CSS)
+           ========================================= */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: #f0f0f5; 
+            padding: 20px; 
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .nav-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .btn-nav {
+            flex: 1; 
+            background: #e0e0e5;
+            color: #333;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav.active {
+            background: #007aff;
+            color: white;
+        }
+
+        h2 { text-align: center; margin-top: 10px; }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            position: relative; /* Wichtig für die Positionierung der Pfeile */
+        }
+        input[type="text"], input[type="number"], select { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button { 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: none; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            width: 100%;
+            margin-top: 5px;
+        }
+        .btn-add { background: #007aff; color: white; }
+        .btn-plus { background: #34c759; color: white; }
+        .btn-reset { background: #ff3b30; color: white; }
+        .btn-delete { background: transparent; color: #999; font-size: 14px; margin-top: 15px; width: auto; float: right; }
+        .clear { clear: both; }
+
+        /* NEU: Styles für die Hoch/Runter Buttons */
+        .controls-move {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+        }
+        .btn-move {
+            background: #f0f0f5;
+            color: #333;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* To-Do Styles */
+        .todo-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 0; 
+            border-bottom: 1px solid #eee; 
+            gap: 8px; /* Abstand zwischen den Elementen */
+        }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-checkbox { 
+            width: 24px; 
+            height: 24px; 
+            cursor: pointer;
+        }
+        .todo-text { 
+            flex-grow: 1; 
+            font-size: 16px; 
+            transition: all 0.2s;
+        }
+        .todo-completed { 
+            text-decoration: line-through; 
+            color: #aaa; 
+        }
+        .btn-delete-small { 
+            background: transparent; 
+            color: #ff3b30; 
+            border: none; 
+            width: auto; 
+            padding: 5px; 
+            margin: 0; 
+            font-size: 14px;
+        }
+        .btn-move-small {
+            background: #f0f0f5;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 0;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-container">
+        <button id="btnHabits" class="btn-nav active" onclick="switchTab('habits')">🧭 Gewohnheiten</button>
+        <button id="btnTodos" class="btn-nav" onclick="switchTab('todos')">📝 To-Dos</button>
+    </div>
+
+    <div id="sectionHabits" style="display: block;">
+        <h2>🧭 Mein Habit-Kompass</h2>
+        <div class="card">
+            <input type="text" id="habitName" placeholder="Name der Gewohnheit (z.B. Lesen)...">
+            <select id="habitType">
+                <option value="good">🟢 Gute Gewohnheit (Zähler)</option>
+                <option value="bad">🔴 Schlechte Gewohnheit (Timer)</option>
+                <option value="reading">📖 Lesen (Seiten-Tracker)</option>
+            </select>
+            <button class="btn-add" onclick="addHabit()">Gewohnheit hinzufügen</button>
+        </div>
+        <div id="habitsContainer"></div>
+    </div>
+
+    <div id="sectionTodos" style="display: none;">
+        <h2>📝 Meine To-Do Liste</h2>
+        <div class="card">
+            <input type="text" id="todoName" placeholder="Neue Aufgabe eintragen...">
+            <button class="btn-add" onclick="addTodo()">Aufgabe hinzufügen</button>
+        </div>
+        <div class="card" id="todosContainer" style="padding-top: 5px; padding-bottom: 5px;">
+        </div>
+    </div>
+
+    <script>
+        /* =========================================
+           NAVIGATION
+           ========================================= */
+        function switchTab(tabName) {
+            const secHabits = document.getElementById('sectionHabits');
+            const secTodos = document.getElementById('sectionTodos');
+            const btnHabits = document.getElementById('btnHabits');
+            const btnTodos = document.getElementById('btnTodos');
+
+            if (tabName === 'habits') {
+                secHabits.style.display = 'block';
+                secTodos.style.display = 'none';
+                btnHabits.classList.add('active');
+                btnTodos.classList.remove('active');
+            } else if (tabName === 'todos') {
+                secHabits.style.display = 'none';
+                secTodos.style.display = 'block';
+                btnTodos.classList.add('active');
+                btnHabits.classList.remove('active');
+            }
+        }
+
+        /* =========================================
+           TEIL 1: GEWOHNHEITEN
+           ========================================= */
+        let habits = JSON.parse(localStorage.getItem('myHabits')) || [];
+
+        function saveHabits() {
+            localStorage.setItem('myHabits', JSON.stringify(habits));
+            renderHabits();
+        }
+
+        function addHabit() {
+            const name = document.getElementById('habitName').value;
+            const type = document.getElementById('habitType').value;
+            if(name.trim() === '') return;
+
+            habits.push({
+                id: Date.now(),
+                name: name,
+                type: type,
+                count: 0,
+                totalPages: 0, 
+                startTime: Date.now()
+            });
+            document.getElementById('habitName').value = '';
+            saveHabits();
+        }
+
+        // NEU: Funktion zum Verschieben von Gewohnheiten
+        function moveHabit(id, direction) {
+            // Finde heraus, an welcher Position (Index) das Element steht
+            const index = habits.findIndex(h => h.id === id);
+            
+            // Wenn es nach OBEN soll (-1) und nicht schon ganz oben ist (index > 0)
+            if (direction === -1 && index > 0) {
+                // Tausche das Element mit dem Element darüber
+                let temp = habits[index - 1];
+                habits[index - 1] = habits[index];
+                habits[index] = temp;
+                saveHabits();
+            } 
+            // Wenn es nach UNTEN soll (1) und nicht schon ganz unten ist
+            else if (direction === 1 && index < habits.length - 1) {
+                // Tausche das Element mit dem Element darunter
+                let temp = habits[index + 1];
+                habits[index + 1] = habits[index];
+                habits[index] = temp;
+                saveHabits();
+            }
+        }
+
+        function addPages(id) {
+            const inputField = document.getElementById(`input-${id}`);
+            const pagesToAdd = parseInt(inputField.value);
+            if (isNaN(pagesToAdd) || pagesToAdd <= 0) return;
+
+            let habit = habits.find(h => h.id === id);
+            habit.totalPages += pagesToAdd;
+            inputField.value = ''; 
+            saveHabits();
+        }
+
+        function increaseCount(id) {
+            let habit = habits.find(h => h.id === id);
+            habit.count++;
+            saveHabits();
+        }
+
+        function resetTimer(id) {
+            let habit = habits.find(h => h.id === id);
+            habit.startTime = Date.now();
+            saveHabits();
+        }
+
+        function deleteHabit(id) {
+            habits = habits.filter(h => h.id !== id);
+            saveHabits();
+        }
+
+        function renderHabits() {
+            const container = document.getElementById('habitsContainer');
+            container.innerHTML = '';
+            let now = Date.now();
+
+            habits.forEach(h => {
+                let div = document.createElement('div');
+                div.className = 'card';
+                
+                // HTML für die Pfeile
+                let moveButtonsHTML = `
+                    <div class="controls-move">
+                        <button class="btn-move" onclick="moveHabit(${h.id}, -1)">⬆️</button>
+                        <button class="btn-move" onclick="moveHabit(${h.id}, 1)">⬇️</button>
+                    </div>
+                `;
+                
+                if(h.type === 'good') {
+                    div.innerHTML = `
+                        ${moveButtonsHTML}
+                        <h3 style="margin-right: 80px;">🟢 ${h.name}</h3>
+                        <p>Aktueller Stand: <strong>${h.count}</strong> mal geschafft!</p>
+                        <button class="btn-plus" onclick="increaseCount(${h.id})">+ 1 Hinzufügen</button>
+                        <button class="btn-delete" onclick="deleteHabit(${h.id})">Löschen</button>
+                        <div class="clear"></div>
+                    `;
+                } else if(h.type === 'reading') {
+                    div.innerHTML = `
+                        ${moveButtonsHTML}
+                        <h3 style="margin-right: 80px;">📖 ${h.name}</h3>
+                        <p>Insgesamt gelesen: <strong>${h.totalPages}</strong> Seiten</p>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="input-${h.id}" placeholder="Seiten..." style="flex-grow: 1; margin: 0;">
+                            <button class="btn-plus" onclick="addPages(${h.id})" style="width: auto; margin: 0; padding: 10px 20px;">+</button>
+                        </div>
+                        <button class="btn-delete" onclick="deleteHabit(${h.id})">Löschen</button>
+                        <div class="clear"></div>
+                    `;
+                } else {
+                    let diffMinutes = Math.floor((now - h.startTime) / (1000 * 60));
+                    let hours = Math.floor(diffMinutes / 60);
+                    let days = Math.floor(hours / 24);
+                    let displayTime = `${days} Tage, ${hours % 24} Stunden`;
+
+                    div.innerHTML = `
+                        ${moveButtonsHTML}
+                        <h3 style="margin-right: 80px;">🔴 ${h.name}</h3>
+                        <p>Zeit seit dem letzten Mal: <strong>${displayTime}</strong></p>
+                        <button class="btn-reset" onclick="resetTimer(${h.id})">Rückfällig (Reset)</button>
+                        <button class="btn-delete" onclick="deleteHabit(${h.id})">Löschen</button>
+                        <div class="clear"></div>
+                    `;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        /* =========================================
+           TEIL 2: TO-DO LISTE
+           ========================================= */
+        let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
+
+        function saveTodos() {
+            localStorage.setItem('myTodos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        function addTodo() {
+            const text = document.getElementById('todoName').value;
+            if(text.trim() === '') return; 
+
+            todos.push({
+                id: Date.now(),
+                text: text,
+                completed: false 
+            });
+            document.getElementById('todoName').value = ''; 
+            saveTodos();
+        }
+
+        // NEU: Funktion zum Verschieben von To-Dos
+        function moveTodo(id, direction) {
+            const index = todos.findIndex(t => t.id === id);
+            
+            if (direction === -1 && index > 0) {
+                let temp = todos[index - 1];
+                todos[index - 1] = todos[index];
+                todos[index] = temp;
+                saveTodos();
+            } else if (direction === 1 && index < todos.length - 1) {
+                let temp = todos[index + 1];
+                todos[index + 1] = todos[index];
+                todos[index] = temp;
+                saveTodos();
+            }
+        }
+
+        function toggleTodo(id) {
+            let todo = todos.find(t => t.id === id);
+            todo.completed = !todo.completed; 
+            saveTodos();
+        }
+
+        function deleteTodo(id) {
+            todos = todos.filter(t => t.id !== id);
+            saveTodos();
+        }
+
+        function renderTodos() {
+            const container = document.getElementById('todosContainer');
+            container.innerHTML = '';
+
+            if (todos.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888;">Noch keine Aufgaben vorhanden.</p>';
+                return;
+            }
+
+            todos.forEach(t => {
+                let div = document.createElement('div');
+                div.className = 'todo-item';
+                
+                div.innerHTML = `
+                    <input type="checkbox" class="todo-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo(${t.id})">
+                    <span class="todo-text ${t.completed ? 'todo-completed' : ''}">${t.text}</span>
+                    <button class="btn-move-small" onclick="moveTodo(${t.id}, -1)">⬆️</button>
+                    <button class="btn-move-small" onclick="moveTodo(${t.id}, 1)">⬇️</button>
+                    <button class="btn-delete-small" onclick="deleteTodo(${t.id})">✖</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // =========================================
+        // START DER APP
+        // =========================================
+        renderHabits();
+        renderTodos(); 
+        
+        setInterval(renderHabits, 60000);
+
+    </script>
+</body>
+</html>
