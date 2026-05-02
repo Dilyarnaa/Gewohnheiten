@@ -158,6 +158,24 @@
             white-space: nowrap;
         }
 
+        .sync-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .sync-panel input {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .sync-panel .btn-ghost,
+        .sync-panel .btn-primary {
+            width: auto;
+        }
+
         .hero-stats,
         .summary-grid {
             display: grid;
@@ -521,6 +539,10 @@
                         <div class="eyebrow">Habit App</div>
                         <h1>Klar. Ruhig. Dran bleiben.</h1>
                         <p>Deine Daten bleiben lokal auf deinem Gerät.</p>
+                        <div class="sync-panel">
+                            <input type="text" id="syncCode" placeholder="Sync-Code">
+                            <button class="btn-ghost" onclick="toggleSyncConnection()">Sync</button>
+                        </div>
                     </div>
                     <div id="syncBadge" class="sync-badge">Aktuell</div>
                 </div>
@@ -616,15 +638,190 @@
         <p class="footer-note">Lokal gespeichert.</p>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="./firebase-config.js"></script>
     <script>
         const APP_VERSION = "2026-05-02-1";
         let habits = JSON.parse(localStorage.getItem("myHabits")) || [];
         let todos = JSON.parse(localStorage.getItem("myTodos")) || [];
+        const deviceId = localStorage.getItem("deviceId") || "device-" + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem("deviceId", deviceId);
+
+        let db = null;
+        let syncEnabled = false;
+        let syncReady = false;
+        let syncRoom = localStorage.getItem("syncRoom") || "";
+        let syncUnsubscribe = null;
+        let lastRemoteTimestamp = 0;
+        let syncPushTimer = null;
+        let applyingRemoteState = false;
 
         function setSyncBadge(text) {
             const badge = document.getElementById("syncBadge");
             if (badge) {
                 badge.textContent = text;
+            }
+        }
+
+        function hasFirebaseConfig() {
+            return Boolean(
+                window.FIREBASE_SYNC_ENABLED &&
+                window.FIREBASE_CONFIG &&
+                window.FIREBASE_CONFIG.apiKey &&
+                window.FIREBASE_CONFIG.authDomain &&
+                window.FIREBASE_CONFIG.projectId &&
+                window.FIREBASE_CONFIG.appId
+            );
+        }
+
+        async function initCloudSync() {
+            const syncInput = document.getElementById("syncCode");
+            if (syncInput) {
+                syncInput.value = syncRoom;
+            }
+
+            if (!hasFirebaseConfig() || typeof firebase === "undefined") {
+                setSyncBadge("Lokal");
+                return;
+            }
+
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(window.FIREBASE_CONFIG);
+                }
+
+                await firebase.auth().signInAnonymously();
+                db = firebase.firestore();
+                syncEnabled = true;
+                syncReady = true;
+                setSyncBadge(syncRoom ? "Sync an" : "Bereit");
+
+                if (syncRoom) {
+                    connectSyncRoom(syncRoom);
+                }
+            } catch (error) {
+                setSyncBadge("Lokal");
+            }
+        }
+
+        function getRoomId(rawRoom) {
+            return rawRoom.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 40);
+        }
+
+        function getSyncDoc(room) {
+            return db.collection("habitSyncRooms").doc(room);
+        }
+
+        function connectSyncRoom(room) {
+            if (!syncEnabled || !db || !room) {
+                return;
+            }
+
+            if (syncUnsubscribe) {
+                syncUnsubscribe();
+                syncUnsubscribe = null;
+            }
+
+            syncRoom = room;
+            localStorage.setItem("syncRoom", syncRoom);
+            setSyncBadge("Sync an");
+
+            syncUnsubscribe = getSyncDoc(syncRoom).onSnapshot((snapshot) => {
+                if (!snapshot.exists) {
+                    pushStateToCloud(true);
+                    return;
+                }
+
+                const data = snapshot.data();
+                const remoteTimestamp = data.updatedAt || 0;
+
+                if (data.lastEditedBy === deviceId || remoteTimestamp <= lastRemoteTimestamp) {
+                    return;
+                }
+
+                lastRemoteTimestamp = remoteTimestamp;
+                applyingRemoteState = true;
+                habits = Array.isArray(data.habits) ? data.habits : [];
+                todos = Array.isArray(data.todos) ? data.todos : [];
+                sortTodos();
+                localStorage.setItem("myHabits", JSON.stringify(habits));
+                localStorage.setItem("myTodos", JSON.stringify(todos));
+                renderHabits();
+                renderTodos();
+                updateHeroStats();
+                applyingRemoteState = false;
+            });
+        }
+
+        function disconnectSyncRoom() {
+            if (syncUnsubscribe) {
+                syncUnsubscribe();
+                syncUnsubscribe = null;
+            }
+            syncRoom = "";
+            localStorage.removeItem("syncRoom");
+            const syncInput = document.getElementById("syncCode");
+            if (syncInput) {
+                syncInput.value = "";
+            }
+            setSyncBadge(syncEnabled ? "Bereit" : "Lokal");
+        }
+
+        function toggleSyncConnection() {
+            const syncInput = document.getElementById("syncCode");
+            const room = getRoomId(syncInput ? syncInput.value : "");
+
+            if (!syncEnabled) {
+                setSyncBadge("Lokal");
+                return;
+            }
+
+            if (syncRoom && room === syncRoom) {
+                disconnectSyncRoom();
+                return;
+            }
+
+            if (!room) {
+                setSyncBadge("Code fehlt");
+                return;
+            }
+
+            connectSyncRoom(room);
+            pushStateToCloud(true);
+        }
+
+        function queueCloudSync() {
+            if (!syncEnabled || !syncReady || !syncRoom || applyingRemoteState) {
+                return;
+            }
+
+            clearTimeout(syncPushTimer);
+            syncPushTimer = setTimeout(() => {
+                pushStateToCloud(false);
+            }, 250);
+        }
+
+        async function pushStateToCloud(force) {
+            if (!syncEnabled || !db || !syncRoom || applyingRemoteState) {
+                return;
+            }
+
+            try {
+                const payload = {
+                    habits,
+                    todos,
+                    updatedAt: Date.now(),
+                    lastEditedBy: deviceId,
+                    version: APP_VERSION
+                };
+
+                lastRemoteTimestamp = payload.updatedAt;
+                await getSyncDoc(syncRoom).set(payload, { merge: !force });
+                setSyncBadge("Sync an");
+            } catch (error) {
+                setSyncBadge("Offline");
             }
         }
 
@@ -736,16 +933,28 @@
             document.getElementById("todoPendingCount").textContent = todos.length - completedTodos;
         }
 
+        function sortTodos() {
+            todos.sort((a, b) => {
+                if (a.completed === b.completed) {
+                    return a.id - b.id;
+                }
+                return a.completed ? 1 : -1;
+            });
+        }
+
         function saveHabits() {
             localStorage.setItem("myHabits", JSON.stringify(habits));
             renderHabits();
             updateHeroStats();
+            queueCloudSync();
         }
 
         function saveTodos() {
+            sortTodos();
             localStorage.setItem("myTodos", JSON.stringify(todos));
             renderTodos();
             updateHeroStats();
+            queueCloudSync();
         }
 
         function addHabit() {
@@ -955,6 +1164,7 @@
         renderTodos();
         updateHeroStats();
         registerAppShell();
+        initCloudSync();
         setInterval(renderHabits, 60000);
     </script>
 </body>
