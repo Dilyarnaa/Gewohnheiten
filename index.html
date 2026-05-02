@@ -4,31 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Habit-Kompass & To-Dos</title>
+    <meta name="theme-color" content="#f3eadf">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Habits & To-Dos</title>
+    <link rel="manifest" href="./manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #f4efe7;
-            --bg-accent: #efe1d0;
             --panel: rgba(255, 250, 244, 0.82);
-            --panel-strong: rgba(255, 248, 240, 0.96);
             --line: rgba(88, 60, 36, 0.12);
             --text: #2f241c;
             --muted: #756454;
             --blue: #285c8f;
-            --blue-soft: #dbeaf6;
             --green: #2b7a58;
-            --green-soft: #dff3e8;
             --red: #9f4d3b;
-            --red-soft: #f8e2da;
             --gold: #b37a1c;
-            --gold-soft: #f7edd3;
             --shadow: 0 22px 48px rgba(63, 42, 24, 0.12);
-            --radius-xl: 28px;
-            --radius-lg: 20px;
-            --radius-md: 14px;
         }
 
         * {
@@ -38,7 +33,7 @@
         body {
             margin: 0;
             min-height: 100vh;
-            padding: 32px 18px 48px;
+            padding: 24px 16px 40px;
             font-family: "Inter", sans-serif;
             color: var(--text);
             background:
@@ -58,46 +53,55 @@
         }
 
         body::before {
-            width: 260px;
-            height: 260px;
+            width: 220px;
+            height: 220px;
             top: -70px;
             right: -80px;
             background: rgba(40, 92, 143, 0.15);
         }
 
         body::after {
-            width: 220px;
-            height: 220px;
-            bottom: -60px;
-            left: -60px;
+            width: 180px;
+            height: 180px;
+            bottom: -50px;
+            left: -50px;
             background: rgba(179, 122, 28, 0.14);
         }
 
         .app-shell {
-            max-width: 980px;
+            max-width: 920px;
             margin: 0 auto;
+        }
+
+        .hero,
+        .composer,
+        .panel-card,
+        .habit-card,
+        .stat-card,
+        .summary-card {
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            background: var(--panel);
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow);
         }
 
         .hero {
             position: relative;
             overflow: hidden;
-            padding: 28px;
-            margin-bottom: 22px;
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            border-radius: 34px;
+            padding: 24px;
+            margin-bottom: 18px;
+            border-radius: 30px;
             background:
                 linear-gradient(135deg, rgba(255, 252, 247, 0.94), rgba(244, 233, 219, 0.88)),
                 rgba(255, 255, 255, 0.65);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(18px);
         }
 
         .hero::after {
             content: "";
             position: absolute;
             inset: auto -90px -90px auto;
-            width: 260px;
-            height: 260px;
+            width: 240px;
+            height: 240px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(40, 92, 143, 0.14), transparent 62%);
         }
@@ -105,69 +109,73 @@
         .eyebrow {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
             padding: 8px 12px;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.72);
             color: var(--muted);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
 
-        .hero h1 {
-            margin: 18px 0 10px;
-            max-width: 11ch;
-            font-family: "Fraunces", serif;
-            font-size: clamp(2.2rem, 5vw, 4.5rem);
-            line-height: 0.98;
-            letter-spacing: -0.04em;
-        }
-
-        .hero p {
-            max-width: 640px;
-            margin: 0;
-            color: var(--muted);
-            font-size: 1rem;
-            line-height: 1.7;
-        }
-
-        .hero-grid {
+        .hero-row {
             position: relative;
             z-index: 1;
             display: grid;
             gap: 18px;
         }
 
+        .hero-top {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .hero h1 {
+            margin: 14px 0 6px;
+            font-family: "Fraunces", serif;
+            font-size: clamp(2.1rem, 5vw, 4rem);
+            line-height: 0.98;
+            letter-spacing: -0.04em;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .sync-badge {
+            align-self: flex-start;
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
         .hero-stats,
         .summary-grid {
             display: grid;
-            gap: 14px;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         }
 
         .stat-card,
-        .summary-card,
-        .composer,
-        .panel-card,
-        .habit-card {
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            background: var(--panel);
-            backdrop-filter: blur(16px);
-            box-shadow: var(--shadow);
-        }
-
-        .stat-card {
-            padding: 18px;
-            border-radius: 22px;
+        .summary-card {
+            padding: 16px;
+            border-radius: 20px;
         }
 
         .stat-card span,
         .summary-label {
             display: block;
             color: var(--muted);
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 600;
         }
 
@@ -175,7 +183,7 @@
         .summary-value {
             display: block;
             margin-top: 8px;
-            font-size: 1.8rem;
+            font-size: 1.65rem;
             font-weight: 700;
             letter-spacing: -0.03em;
         }
@@ -184,7 +192,7 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
             padding: 10px;
             border-radius: 22px;
             background: rgba(255, 251, 245, 0.68);
@@ -194,7 +202,7 @@
         }
 
         .btn-tab {
-            padding: 16px 18px;
+            padding: 15px 16px;
             border: none;
             border-radius: 16px;
             background: transparent;
@@ -211,10 +219,6 @@
             box-shadow: 0 16px 28px rgba(40, 92, 143, 0.28);
         }
 
-        .btn-tab:hover {
-            transform: translateY(-1px);
-        }
-
         .section {
             display: none;
             animation: fadeUp 0.35s ease;
@@ -224,18 +228,8 @@
             display: block;
         }
 
-        .section-grid {
-            display: grid;
-            gap: 16px;
-        }
-
         .summary-grid {
-            margin-bottom: 16px;
-        }
-
-        .summary-card {
-            padding: 18px;
-            border-radius: 22px;
+            margin-bottom: 14px;
         }
 
         .summary-card.accent-blue {
@@ -250,29 +244,29 @@
             background: linear-gradient(180deg, rgba(247, 237, 211, 0.96), rgba(255, 252, 247, 0.92));
         }
 
+        .section-grid {
+            display: grid;
+            gap: 14px;
+        }
+
         .composer,
         .panel-card {
-            padding: 22px;
-            border-radius: 26px;
+            padding: 20px;
+            border-radius: 24px;
         }
 
         .card-title {
-            margin: 0 0 8px;
+            margin: 0 0 14px;
             font-family: "Fraunces", serif;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             letter-spacing: -0.03em;
-        }
-
-        .card-subtitle {
-            margin: 0 0 18px;
-            color: var(--muted);
-            line-height: 1.6;
         }
 
         .form-grid {
             display: grid;
             gap: 12px;
             grid-template-columns: 1.2fr 0.8fr;
+            margin-bottom: 12px;
         }
 
         input[type="text"],
@@ -304,7 +298,7 @@
             border: none;
             cursor: pointer;
             font: inherit;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
         .btn-primary,
@@ -334,86 +328,6 @@
             box-shadow: 0 16px 28px rgba(159, 77, 59, 0.2);
         }
 
-        .btn-primary:hover,
-        .btn-soft:hover,
-        .btn-danger:hover,
-        .btn-ghost:hover,
-        .btn-icon:hover {
-            transform: translateY(-1px);
-        }
-
-        .list-grid {
-            display: grid;
-            gap: 14px;
-        }
-
-        .habit-card {
-            position: relative;
-            padding: 22px;
-            border-radius: 24px;
-        }
-
-        .habit-card::before {
-            content: "";
-            position: absolute;
-            inset: 0 auto 0 0;
-            width: 6px;
-            border-radius: 24px 0 0 24px;
-            background: var(--card-accent, var(--blue));
-        }
-
-        .habit-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 14px;
-            margin-bottom: 12px;
-        }
-
-        .habit-title {
-            margin: 0;
-            font-size: 1.12rem;
-            font-weight: 700;
-        }
-
-        .habit-meta {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.72);
-            color: var(--muted);
-            font-size: 0.84rem;
-            font-weight: 700;
-        }
-
-        .habit-description {
-            margin: 0 0 16px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .habit-actions,
-        .todo-actions,
-        .inline-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .inline-form input {
-            flex: 1;
-            min-width: 120px;
-            margin: 0;
-        }
-
-        .inline-form .btn-soft {
-            width: auto;
-            min-width: 78px;
-        }
-
         .btn-ghost {
             width: auto;
             padding: 11px 14px;
@@ -438,6 +352,77 @@
             background: rgba(159, 77, 59, 0.08);
         }
 
+        .list-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .habit-card {
+            position: relative;
+            padding: 20px;
+            border-radius: 24px;
+        }
+
+        .habit-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 6px;
+            border-radius: 24px 0 0 24px;
+            background: var(--card-accent, var(--blue));
+        }
+
+        .habit-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .habit-title {
+            margin: 0;
+            font-size: 1.08rem;
+            font-weight: 700;
+        }
+
+        .habit-meta {
+            display: inline-flex;
+            margin-top: 8px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .habit-value {
+            margin: 0 0 14px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .habit-actions,
+        .todo-actions,
+        .inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .inline-form input {
+            flex: 1;
+            min-width: 120px;
+            margin: 0;
+        }
+
+        .inline-form .btn-soft {
+            width: auto;
+            min-width: 84px;
+        }
+
         .todo-row {
             display: grid;
             grid-template-columns: auto 1fr auto;
@@ -458,29 +443,18 @@
             cursor: pointer;
         }
 
-        .todo-copy {
-            display: grid;
-            gap: 3px;
-        }
-
         .todo-text {
             font-size: 1rem;
             font-weight: 600;
         }
 
-        .todo-note {
-            color: var(--muted);
-            font-size: 0.86rem;
-        }
-
-        .todo-completed .todo-text,
-        .todo-completed .todo-note {
+        .todo-completed .todo-text {
             color: #a49384;
             text-decoration: line-through;
         }
 
         .empty-state {
-            padding: 26px 18px;
+            padding: 22px 16px;
             border-radius: 20px;
             text-align: center;
             color: var(--muted);
@@ -489,10 +463,10 @@
         }
 
         .footer-note {
-            margin-top: 18px;
+            margin-top: 16px;
             text-align: center;
             color: var(--muted);
-            font-size: 0.88rem;
+            font-size: 0.84rem;
         }
 
         @keyframes fadeUp {
@@ -508,22 +482,24 @@
 
         @media (max-width: 720px) {
             body {
-                padding: 20px 14px 34px;
+                padding: 18px 14px 34px;
             }
 
             .hero,
             .composer,
             .panel-card,
             .habit-card {
-                padding: 20px;
+                padding: 18px;
             }
 
+            .hero-top,
             .form-grid {
                 grid-template-columns: 1fr;
+                display: grid;
             }
 
-            .hero h1 {
-                max-width: none;
+            .hero-top {
+                gap: 12px;
             }
 
             .todo-row {
@@ -539,26 +515,26 @@
 <body>
     <main class="app-shell">
         <section class="hero">
-            <div class="hero-grid">
-                <div class="eyebrow">Routinen mit Stil</div>
-                <div>
-                    <h1>Dein Alltag, klarer und schöner organisiert.</h1>
-                    <p>
-                        Behalte Gewohnheiten und Aufgaben in einem ruhigen, hochwertigen Dashboard im Blick.
-                        Alles bleibt lokal auf deinem Gerät gespeichert.
-                    </p>
+            <div class="hero-row">
+                <div class="hero-top">
+                    <div>
+                        <div class="eyebrow">Habit App</div>
+                        <h1>Klar. Ruhig. Dran bleiben.</h1>
+                        <p>Deine Daten bleiben lokal auf deinem Gerät.</p>
+                    </div>
+                    <div id="syncBadge" class="sync-badge">Aktuell</div>
                 </div>
                 <div class="hero-stats">
                     <div class="stat-card">
-                        <span>Gewohnheiten gesamt</span>
+                        <span>Habits</span>
                         <strong id="heroHabitCount">0</strong>
                     </div>
                     <div class="stat-card">
-                        <span>Offene To-Dos</span>
+                        <span>Offen</span>
                         <strong id="heroTodoOpenCount">0</strong>
                     </div>
                     <div class="stat-card">
-                        <span>Erledigt heute</span>
+                        <span>Fertig</span>
                         <strong id="heroTodoDoneCount">0</strong>
                     </div>
                 </div>
@@ -566,39 +542,38 @@
         </section>
 
         <nav class="tabs">
-            <button id="btnHabits" class="btn-tab active" onclick="switchTab('habits')">Habit-Kompass</button>
-            <button id="btnTodos" class="btn-tab" onclick="switchTab('todos')">To-Do Fokus</button>
+            <button id="btnHabits" class="btn-tab active" onclick="switchTab('habits')">Habits</button>
+            <button id="btnTodos" class="btn-tab" onclick="switchTab('todos')">To-Dos</button>
         </nav>
 
         <section id="sectionHabits" class="section active">
             <div class="summary-grid">
                 <div class="summary-card accent-blue">
-                    <span class="summary-label">Positive Routinen</span>
+                    <span class="summary-label">Gut</span>
                     <strong class="summary-value" id="goodHabitCount">0</strong>
                 </div>
                 <div class="summary-card accent-green">
-                    <span class="summary-label">Lese-Tracker</span>
+                    <span class="summary-label">Seiten</span>
                     <strong class="summary-value" id="readingHabitPages">0</strong>
                 </div>
                 <div class="summary-card accent-gold">
-                    <span class="summary-label">Timer ohne Rückfall</span>
+                    <span class="summary-label">Timer</span>
                     <strong class="summary-value" id="badHabitCount">0</strong>
                 </div>
             </div>
 
             <div class="section-grid">
                 <div class="composer">
-                    <h2 class="card-title">Neue Gewohnheit anlegen</h2>
-                    <p class="card-subtitle">Wähle den Typ und starte direkt mit einer aufgeräumten Übersicht.</p>
+                    <h2 class="card-title">Neues Habit</h2>
                     <div class="form-grid">
-                        <input type="text" id="habitName" placeholder="Zum Beispiel: 20 Minuten lesen">
+                        <input type="text" id="habitName" placeholder="Neues Habit">
                         <select id="habitType">
-                            <option value="good">Gute Gewohnheit (Zähler)</option>
-                            <option value="bad">Schlechte Gewohnheit (Timer)</option>
-                            <option value="reading">Lesen (Seiten-Tracker)</option>
+                            <option value="good">Gut</option>
+                            <option value="bad">Timer</option>
+                            <option value="reading">Lesen</option>
                         </select>
                     </div>
-                    <button class="btn-primary" onclick="addHabit()">Gewohnheit hinzufügen</button>
+                    <button class="btn-primary" onclick="addHabit()">Hinzufügen</button>
                 </div>
 
                 <div id="habitsContainer" class="list-grid"></div>
@@ -608,44 +583,92 @@
         <section id="sectionTodos" class="section">
             <div class="summary-grid">
                 <div class="summary-card accent-blue">
-                    <span class="summary-label">Einträge gesamt</span>
+                    <span class="summary-label">Gesamt</span>
                     <strong class="summary-value" id="todoTotalCount">0</strong>
                 </div>
                 <div class="summary-card accent-green">
-                    <span class="summary-label">Bereits erledigt</span>
+                    <span class="summary-label">Fertig</span>
                     <strong class="summary-value" id="todoCompletedCount">0</strong>
                 </div>
                 <div class="summary-card accent-gold">
-                    <span class="summary-label">Noch offen</span>
+                    <span class="summary-label">Offen</span>
                     <strong class="summary-value" id="todoPendingCount">0</strong>
                 </div>
             </div>
 
             <div class="section-grid">
                 <div class="composer">
-                    <h2 class="card-title">Neue Aufgabe notieren</h2>
-                    <p class="card-subtitle">Sammle kleine nächste Schritte an einem Ort und hake sie entspannt ab.</p>
+                    <h2 class="card-title">Neues To-Do</h2>
                     <div class="form-grid">
-                        <input type="text" id="todoName" placeholder="Zum Beispiel: Kapitel 3 zusammenfassen">
+                        <input type="text" id="todoName" placeholder="Neue Aufgabe">
                         <div></div>
                     </div>
-                    <button class="btn-primary" onclick="addTodo()">Aufgabe hinzufügen</button>
+                    <button class="btn-primary" onclick="addTodo()">Hinzufügen</button>
                 </div>
 
                 <div class="panel-card">
-                    <h2 class="card-title">Deine Liste</h2>
-                    <p class="card-subtitle">Sortiere nach Priorität, markiere Erledigtes oder räume auf.</p>
+                    <h2 class="card-title">Liste</h2>
                     <div id="todosContainer"></div>
                 </div>
             </div>
         </section>
 
-        <p class="footer-note">Alle Daten werden weiterhin lokal im Browser gespeichert.</p>
+        <p class="footer-note">Lokal gespeichert.</p>
     </main>
 
     <script>
+        const APP_VERSION = "2026-05-02-1";
         let habits = JSON.parse(localStorage.getItem("myHabits")) || [];
         let todos = JSON.parse(localStorage.getItem("myTodos")) || [];
+
+        function setSyncBadge(text) {
+            const badge = document.getElementById("syncBadge");
+            if (badge) {
+                badge.textContent = text;
+            }
+        }
+
+        async function registerAppShell() {
+            if (!("serviceWorker" in navigator) || location.protocol === "file:") {
+                setSyncBadge("Lokal");
+                return;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.register("./sw.js?v=" + APP_VERSION, { scope: "./" });
+                setSyncBadge("Aktuell");
+
+                if (navigator.serviceWorker.controller) {
+                    registration.update().catch(() => {});
+                }
+
+                navigator.serviceWorker.addEventListener("controllerchange", () => {
+                    if (window.__appReloading) {
+                        return;
+                    }
+                    window.__appReloading = true;
+                    setSyncBadge("Neu");
+                    window.location.reload();
+                });
+
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "visible") {
+                        registration.update().catch(() => {});
+                    }
+                });
+
+                window.addEventListener("online", () => {
+                    setSyncBadge("Prüfe");
+                    registration.update().catch(() => {});
+                });
+
+                setInterval(() => {
+                    registration.update().catch(() => {});
+                }, 60000);
+            } catch (error) {
+                setSyncBadge("Offline");
+            }
+        }
 
         function switchTab(tabName) {
             const habitsSection = document.getElementById("sectionHabits");
@@ -677,26 +700,14 @@
 
         function getHabitMeta(type) {
             if (type === "good") {
-                return {
-                    label: "Gute Gewohnheit",
-                    accent: "var(--blue)",
-                    description: "Halte deine positive Routine sichtbar und zähle jeden erfolgreichen Durchlauf."
-                };
+                return { label: "Gut", accent: "var(--blue)" };
             }
 
             if (type === "reading") {
-                return {
-                    label: "Lese-Tracker",
-                    accent: "var(--green)",
-                    description: "Sammle gelesene Seiten und beobachte, wie dein Fortschritt wächst."
-                };
+                return { label: "Lesen", accent: "var(--green)" };
             }
 
-            return {
-                label: "Rückfall-Timer",
-                accent: "var(--red)",
-                description: "Miss die Zeit seit dem letzten Rückfall und starte neu, wenn es nötig ist."
-            };
+            return { label: "Timer", accent: "var(--red)" };
         }
 
         function formatDuration(startTime) {
@@ -704,8 +715,8 @@
             const hours = Math.floor(diffMinutes / 60);
             const days = Math.floor(hours / 24);
             return days > 0
-                ? days + " Tage, " + (hours % 24) + " Stunden"
-                : hours + " Stunden, " + (diffMinutes % 60) + " Minuten";
+                ? days + " T, " + (hours % 24) + " Std"
+                : hours + " Std, " + (diffMinutes % 60) + " Min";
         }
 
         function updateHeroStats() {
@@ -810,7 +821,7 @@
             const container = document.getElementById("habitsContainer");
 
             if (habits.length === 0) {
-                container.innerHTML = '<div class="empty-state">Noch keine Gewohnheiten angelegt. Starte mit einer kleinen Routine.</div>';
+                container.innerHTML = '<div class="empty-state">Noch keine Habits.</div>';
                 return;
             }
 
@@ -826,24 +837,24 @@
 
                 if (habit.type === "good") {
                     contentHtml = `
-                        <p class="habit-description">Aktueller Stand: <strong>${habit.count}</strong> erfolgreich abgeschlossen.</p>
+                        <p class="habit-value"><strong>${habit.count}</strong> Mal</p>
                         <div class="habit-actions">
-                            <button class="btn-soft" onclick="increaseCount(${habit.id})">+1 Fortschritt eintragen</button>
+                            <button class="btn-soft" onclick="increaseCount(${habit.id})">+1</button>
                         </div>
                     `;
                 } else if (habit.type === "reading") {
                     contentHtml = `
-                        <p class="habit-description">Bisher gelesen: <strong>${habit.totalPages}</strong> Seiten.</p>
+                        <p class="habit-value"><strong>${habit.totalPages}</strong> Seiten</p>
                         <div class="inline-form">
-                            <input type="number" id="input-${habit.id}" placeholder="Seitenzahl">
+                            <input type="number" id="input-${habit.id}" placeholder="Seiten">
                             <button class="btn-soft" onclick="addPages(${habit.id})">Speichern</button>
                         </div>
                     `;
                 } else {
                     contentHtml = `
-                        <p class="habit-description">Zeit seit dem letzten Mal: <strong>${formatDuration(habit.startTime)}</strong>.</p>
+                        <p class="habit-value"><strong>${formatDuration(habit.startTime)}</strong></p>
                         <div class="habit-actions">
-                            <button class="btn-danger" onclick="resetTimer(${habit.id})">Rückfall markieren</button>
+                            <button class="btn-danger" onclick="resetTimer(${habit.id})">Reset</button>
                         </div>
                     `;
                 }
@@ -859,7 +870,6 @@
                             <button class="btn-icon" onclick="moveHabit(${habit.id}, 1)" aria-label="Nach unten">↓</button>
                         </div>
                     </div>
-                    <p class="habit-description">${meta.description}</p>
                     ${contentHtml}
                     <div class="habit-actions" style="margin-top: 12px;">
                         <button class="btn-ghost btn-delete" onclick="deleteHabit(${habit.id})">Löschen</button>
@@ -919,7 +929,7 @@
             const container = document.getElementById("todosContainer");
 
             if (todos.length === 0) {
-                container.innerHTML = '<div class="empty-state">Noch keine Aufgaben vorhanden. Trage deine erste Priorität ein.</div>';
+                container.innerHTML = '<div class="empty-state">Noch keine To-Dos.</div>';
                 return;
             }
 
@@ -930,10 +940,7 @@
                 row.className = "todo-row" + (todo.completed ? " todo-completed" : "");
                 row.innerHTML = `
                     <input type="checkbox" class="todo-checkbox" ${todo.completed ? "checked" : ""} onchange="toggleTodo(${todo.id})">
-                    <div class="todo-copy">
-                        <span class="todo-text">${escapeHtml(todo.text)}</span>
-                        <span class="todo-note">${todo.completed ? "Bereits erledigt" : "Noch offen"}</span>
-                    </div>
+                    <span class="todo-text">${escapeHtml(todo.text)}</span>
                     <div class="todo-actions">
                         <button class="btn-icon" onclick="moveTodo(${todo.id}, -1)" aria-label="Nach oben">↑</button>
                         <button class="btn-icon" onclick="moveTodo(${todo.id}, 1)" aria-label="Nach unten">↓</button>
@@ -947,6 +954,7 @@
         renderHabits();
         renderTodos();
         updateHeroStats();
+        registerAppShell();
         setInterval(renderHabits, 60000);
     </script>
 </body>
