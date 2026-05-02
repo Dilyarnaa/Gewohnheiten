@@ -88,11 +88,11 @@
         .hero {
             position: relative;
             overflow: hidden;
-            padding: 24px;
+            padding: 28px;
             margin-bottom: 18px;
             border-radius: 30px;
             background:
-                linear-gradient(135deg, rgba(255, 252, 247, 0.94), rgba(244, 233, 219, 0.88)),
+                linear-gradient(135deg, rgba(255, 252, 247, 0.96), rgba(242, 231, 217, 0.9)),
                 rgba(255, 255, 255, 0.65);
         }
 
@@ -104,6 +104,16 @@
             height: 240px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(40, 92, 143, 0.14), transparent 62%);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(110deg, transparent 0 42%, rgba(255, 255, 255, 0.45) 42% 43%, transparent 43% 100%),
+                repeating-linear-gradient(90deg, rgba(47, 36, 28, 0.035) 0 1px, transparent 1px 92px);
+            opacity: 0.7;
         }
 
         .eyebrow {
@@ -123,7 +133,7 @@
             position: relative;
             z-index: 1;
             display: grid;
-            gap: 18px;
+            gap: 22px;
         }
 
         .hero-top {
@@ -134,11 +144,12 @@
         }
 
         .hero h1 {
-            margin: 14px 0 6px;
+            margin: 16px 0 0;
+            max-width: 660px;
             font-family: "Fraunces", serif;
-            font-size: clamp(2.1rem, 5vw, 4rem);
-            line-height: 0.98;
-            letter-spacing: -0.04em;
+            font-size: clamp(2.6rem, 5vw, 5rem);
+            line-height: 0.92;
+            letter-spacing: 0;
         }
 
         .hero p {
@@ -147,33 +158,24 @@
             line-height: 1.6;
         }
 
-        .sync-badge {
-            align-self: flex-start;
-            padding: 9px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.78);
-            color: var(--muted);
-            font-size: 0.82rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .sync-panel {
+        .top-actions {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
             align-items: center;
-            margin-top: 12px;
+            gap: 10px;
         }
 
-        .sync-panel input {
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .sync-panel .btn-ghost,
-        .sync-panel .btn-primary {
-            width: auto;
+        .settings-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 1.15rem;
+            box-shadow: 0 10px 22px rgba(63, 42, 24, 0.08);
         }
 
         .hero-stats,
@@ -537,14 +539,11 @@
                 <div class="hero-top">
                     <div>
                         <div class="eyebrow">Habit App</div>
-                        <h1>Klar. Ruhig. Dran bleiben.</h1>
-                        <p>Deine Daten bleiben lokal auf deinem Gerät.</p>
-                        <div class="sync-panel">
-                            <input type="text" id="syncCode" placeholder="Sync-Code">
-                            <button class="btn-ghost" onclick="toggleSyncConnection()">Sync</button>
-                        </div>
+                        <h1>Lebe heute so, wie dein zukünftiges Ich es dir dankt.</h1>
                     </div>
-                    <div id="syncBadge" class="sync-badge">Aktuell</div>
+                    <div class="top-actions">
+                        <a class="settings-link" href="./sync.html" aria-label="Sync und Einstellungen">⚙</a>
+                    </div>
                 </div>
                 <div class="hero-stats">
                     <div class="stat-card">
